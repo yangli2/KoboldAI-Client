@@ -5,9 +5,9 @@ requests
 dm-haiku==0.0.9
 jax==0.3.25
 jaxlib==0.3.25
-chex == 0.1.5
-transformers == 4.24.0
-huggingface_hub==0.12.1
+chex==0.1.5
+transformers>=4.24.0
+huggingface_hub>=0.12.1
 progressbar2
 git+https://github.com/VE-FORBRYDERNE/mesh-transformer-jax@ck
 Flask==2.2.3
