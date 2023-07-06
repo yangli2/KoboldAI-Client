@@ -66,7 +66,7 @@ try:
     from transformers.models.opt.modeling_opt import OPTDecoder
 except:
     pass
-import transformers.generation_utils
+import transformers.generation.utils
 
 global tpu_mtj_backend
 
@@ -1961,8 +1961,8 @@ def patch_transformers():
         processors = new_get_logits_processor.old_get_logits_processor(*args, **kwargs)
         processors.insert(0, LuaLogitsProcessor())
         return processors
-    new_get_logits_processor.old_get_logits_processor = transformers.generation_utils.GenerationMixin._get_logits_processor
-    transformers.generation_utils.GenerationMixin._get_logits_processor = new_get_logits_processor
+    new_get_logits_processor.old_get_logits_processor = transformers.generation.utils.GenerationMixin._get_logits_processor
+    transformers.generation.utils.GenerationMixin._get_logits_processor = new_get_logits_processor
 
     class KoboldLogitsWarperList(LogitsProcessorList):
         def __init__(self, beams: int = 1, **kwargs):
@@ -1996,16 +1996,16 @@ def patch_transformers():
             kwargs["eos_token_id"] = -1
             kwargs.setdefault("pad_token_id", 2)
         return new_sample.old_sample(self, *args, **kwargs)
-    new_sample.old_sample = transformers.generation_utils.GenerationMixin.sample
-    transformers.generation_utils.GenerationMixin.sample = new_sample
+    new_sample.old_sample = transformers.generation.utils.GenerationMixin.sample
+    transformers.generation.utils.GenerationMixin.sample = new_sample
 
 
     # Allow bad words filter to ban <|endoftext|> token
-    import transformers.generation_logits_process
+    import transformers.generation.logits_process
     def new_init(self, bad_words_ids: List[List[int]], eos_token_id: int):
         return new_init.old_init(self, bad_words_ids, -1)
-    new_init.old_init = transformers.generation_logits_process.NoBadWordsLogitsProcessor.__init__
-    transformers.generation_logits_process.NoBadWordsLogitsProcessor.__init__ = new_init
+    new_init.old_init = transformers.generation.logits_process.NoBadWordsLogitsProcessor.__init__
+    transformers.generation.logits_process.NoBadWordsLogitsProcessor.__init__ = new_init
 
     class TokenStreamer(StoppingCriteria):
         # A StoppingCriteria is used here because it seems to run after
@@ -2080,7 +2080,7 @@ def patch_transformers():
                     self.regeneration_required = True
                     break
             return self.regeneration_required or self.halt
-    old_get_stopping_criteria = transformers.generation_utils.GenerationMixin._get_stopping_criteria
+    old_get_stopping_criteria = transformers.generation.utils.GenerationMixin._get_stopping_criteria
     def new_get_stopping_criteria(self, *args, **kwargs):
         stopping_criteria = old_get_stopping_criteria(self, *args, **kwargs)
         global tokenizer
@@ -2093,7 +2093,7 @@ def patch_transformers():
         stopping_criteria.insert(0, self.kai_scanner)
         stopping_criteria.insert(0, token_streamer)
         return stopping_criteria
-    transformers.generation_utils.GenerationMixin._get_stopping_criteria = new_get_stopping_criteria
+    transformers.generation.utils.GenerationMixin._get_stopping_criteria = new_get_stopping_criteria
 
 def reset_model_settings():
     vars.socketio = socketio
